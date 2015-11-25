@@ -11,7 +11,7 @@
 #define L_BITS 6
 #define R_BITS 2
 #define SEED 50u
-extern int cpu_size;
+
 static unsigned power2[] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096,
 			    8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576,
 			    2097152, 4194304};
@@ -26,15 +26,13 @@ inline Hash_Value_t hash(Char_t const *c, Pat_Len_t len, char power)
 
      while (len--)
        value ^= (value << L_BITS) + (value >> R_BITS) + *((UC_t const *) c++);
-
+  
      return value & (1 << power) - 1;
 }
 
 Hash_Table_t *make_hash_table(Pat_Num_t slots_num, Pat_Len_t lsp, UC_t power)
 {
      Hash_Table_t *new_hash_table = VMALLOC(Hash_Table_t, Expand_Node_t, slots_num);
-     cpu_size += sizeof(Hash_Table_t) + sizeof(Expand_Node_t) * slots_num;
-
      new_hash_table->slots_num = slots_num;
      new_hash_table->lsp = lsp;
      new_hash_table->power = power;
@@ -46,15 +44,14 @@ Hash_Table_t *make_hash_table(Pat_Num_t slots_num, Pat_Len_t lsp, UC_t power)
 static Suffix_Node_t ***make_tail(Pat_Num_t slots_num, Expand_Node_t *slot)
 {
   Suffix_Node_t ***tail = MALLOC(slots_num, Suffix_Node_t **), ***p = tail;
-  cpu_size += sizeof(Suffix_Node_t**) * slots_num;
 
-  while (slots_num--)
+  while (slots_num--) 
     *p++ = (Suffix_Node_t **) &(slot++)->next_level;
-
+  
   return tail;
 }
 
-void build_hash(Expand_Node_t *expand_node, Pat_Num_t dif_prf_num, Pat_Len_t lsp)
+void build_hash(Expand_Node_t *expand_node, Pat_Num_t dif_prf_num, Pat_Len_t lsp)  
 {
   UC_t power;
   Hash_Table_t *hash_table;
@@ -66,26 +63,25 @@ void build_hash(Expand_Node_t *expand_node, Pat_Num_t dif_prf_num, Pat_Len_t lsp
 
 #if DEBUG
   type_num[HASH].num++;
-#endif
+#endif   
 
   for (power = 1; dif_prf_num > power2[power]; power++)
     ;
-
+     
   slots_num = power2[--power];
   hash_table = make_hash_table(slots_num, lsp, power);
   tail = make_tail(slots_num, hash_table->slots);
-
+  
   for (cur_suf = expand_node->next_level; cur_suf; cur_suf = next_suf) { /* 把所有后缀放入其对应的哈希槽中 */
     next_suf = cur_suf->next; cur_suf->next = NULL;
     hash_value = hash(cur_suf->str, lsp, power);
     *tail[hash_value] = cur_suf;
     tail[hash_value] = &cur_suf->next;
   }
-
+	
   expand_node->next_level = hash_table;
   expand_node->type = HASH;
   free(tail);
-  cpu_size -= sizeof(Suffix_Node_t**) * slots_num;
 
   /* 将hash表新产生的expand_node加入队列 */
   for (slots_num = hash_table->slots_num, slot = hash_table->slots; slots_num; slot++, slots_num--)
@@ -98,11 +94,11 @@ Expand_Node_t *match_hash(Hash_Table_t *hash_table, Char_t const **text, Bool_t 
 {
 #if DEBUG
   fun_calls[MATCH_HASH].num++;
-#endif
+#endif 
 
   Char_t const *s = *text;
   Expand_Node_t *slot = hash_table->slots + hash(s, hash_table->lsp, hash_table->power);
-
+  
   return slot->next_level == NULL ? NULL : slot;
 }
 
@@ -113,7 +109,7 @@ void print_hash(Hash_Table_t *hash_table)
     Pat_Num_t i;
     Pat_Num_t slots_num = hash_table->slots_num;
     Pat_Len_t lsp = hash_table->lsp;
-
+     
     printf("Hashing@ slots number: %u, lsp: %u\n", slots_num, lsp);
     for (i = 0; i < slots_num; slot++, i++)
       if (slot->next_level) {
@@ -121,4 +117,4 @@ void print_hash(Hash_Table_t *hash_table)
     	print_suffix(slot->next_level);
       }
 }
-#endif
+#endif 

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include<sys/time.h>
 #include <sys/stat.h>
 #include <string.h>
 #include <assert.h>
@@ -10,7 +11,7 @@
 static int Seed;
 #define ACMa 16807
 #define ACMm 2147483647
-#define ACMq 127773         
+#define ACMq 127773
 #define ACMr 2836
 #define hi (Seed / ACMq)
 #define lo (Seed % ACMq)
@@ -23,12 +24,12 @@ void cre_rand_text(const char *filename, long text_len, int low, int high)
          fprintf(stderr, "Illegal characters set!\n");
          exit(EXIT_FAILURE);
      }
-     
+
      srand(time(NULL));
-     
+
      while (text_len--)
          putc(rand_range(low, high), fp_text);
-	
+
      Fclose(fp_text);
 }
 
@@ -41,7 +42,7 @@ void cre_rand_pats(const char *filename, long pat_num, int min_pat_len, int max_
     srand(time(NULL));
 
     while (pat_num--) {
-        pat_len = rand_range(min_pat_len, max_pat_len); 
+        pat_len = rand_range(min_pat_len, max_pat_len);
         while (pat_len--) {
             do {
                 ch = rand_range(low, high);
@@ -55,7 +56,7 @@ void cre_rand_pats(const char *filename, long pat_num, int min_pat_len, int max_
 }
 
 unsigned char buf[1024*1024]; /* 1MB buffer */
-  
+
 static int fst = 1;
 
 /* 用1~alphabet中的字符填充buf的前n个字符*/
@@ -64,13 +65,13 @@ static int fst = 1;
 /*     int i; */
 /*     long test; */
 /*     struct timeval t; */
-     
+
 /*     if (fst) { */
 /*         gettimeofday(&t, NULL); */
 /*         Seed = t.tv_sec * t.tv_usec; */
 /*         fst = 0; */
 /*     } */
- 
+
 /*    for (i = 0; i < n; i++) { */
 /*         Seed = ((test = ACMa * lo - ACMr * hi) > 0) ? test : test + ACMm; */
 /*         buf[i] = 1 + ((double)Seed) * alphabet / ACMm; */
@@ -123,13 +124,13 @@ int aleat (int top)
 {
     long test;
     struct timeval t;
-     
+
     if (fst) {
         gettimeofday(&t, NULL);
         Seed = t.tv_sec * t.tv_usec;
         fst = 0;
     }
-     
+
     Seed = ((test = ACMa * lo - ACMr * hi) > 0) ? test : test + ACMm;
     return ((double) Seed) * top / ACMm;
 }
@@ -142,12 +143,12 @@ static void parse_forbid(char const *forbid, char ** forbide)
      len = strlen(forbid);
 
      *forbide = MALLOC(len + 1, char);
-     
+
      for(i = 0, j = 0; i < len; i++) { /* 遍历forbid字符串 */
          if (forbid[i] != '\\') {
 	       if(forbid[i] != '\n')
 		    (*forbide)[j++] = forbid[i];
-	  } else { 
+	  } else {
 	       i++;
 	       if(i == len) {
 		    /* forbid[i-1] = '\0'; */
@@ -158,7 +159,7 @@ static void parse_forbid(char const *forbid, char ** forbide)
 	       switch (forbid[i]) {
 		   case'n':  (*forbide)[j++] = '\n'; break;
 		   case'\\': (*forbide)[j++] = '\\'; break;
-		   case'b':  (*forbide)[j++] = '\b'; break;				
+		   case'b':  (*forbide)[j++] = '\b'; break;
 		   case'e':  (*forbide)[j++] = '\e'; break;
 		   case'f':  (*forbide)[j++] = '\f'; break;
 		   case'r':  (*forbide)[j++] = '\r'; break;
@@ -172,9 +173,9 @@ static void parse_forbid(char const *forbid, char ** forbide)
 			     fprintf (stderr, "Not correct forbidden string: 3 digits after \\c\n");
 			     return;
 			}
-			(*forbide)[j++] = (forbid[i+1]-48)*100 + (forbid[i+2]-48)*10 + (forbid[i+3]-48); 
+			(*forbide)[j++] = (forbid[i+1]-48)*100 + (forbid[i+2]-48)*10 + (forbid[i+3]-48);
 			i += 3;
-			break;					
+			break;
 		   default:
 			fprintf (stdout, "Unknown escape sequence '\\%c'in forbidden string\n", forbid[i]);
 			break;
@@ -192,12 +193,12 @@ void extract_pats(char const *text_filename, long pat_num, int min_pat_len, int 
     FILE *ifile, *ofile;
     unsigned char *buff;
     char *forbide = NULL;
-    
+
     if (stat(text_filename, &sdata) != 0) {
         fprintf(stderr, "Error: cannot stat file %s\n", text_filename);
         exit(EXIT_FAILURE);
     }
-    
+
     file_len = sdata.st_size; 	/* length of file */
 
     if (min_pat_len <= 0 || max_pat_len <= 0 || min_pat_len > max_pat_len || max_pat_len > file_len) {
@@ -209,18 +210,18 @@ void extract_pats(char const *text_filename, long pat_num, int min_pat_len, int 
         fprintf(stderr, "Error: number of patterns must be >= 1\n");
         exit(EXIT_FAILURE);
     }
-     
+
     parse_forbid(forbid, &forbide);
 
     ifile = Fopen (text_filename, "rb");
 
     buff = MALLOC(file_len, unsigned char);
-    
+
     if (fread (buff, file_len, 1, ifile) != 1)  { /* read the whole file into buf */
         fprintf(stderr, "Can not fread file: %s\n", text_filename);
         exit(EXIT_FAILURE);
     }
-    
+
     Fclose(ifile);
 
     ofile = Fopen(pat_filename, "w");
@@ -233,15 +234,15 @@ void extract_pats(char const *text_filename, long pat_num, int min_pat_len, int 
             for (i = 0; i < pat_len; i++)
                 if (strchr(forbide, buff[starting_pos+i])) break;
         } while (i < pat_len);
-	
+
         for (i = 0; i < pat_len; i++)
             putc(buff[starting_pos+i], ofile);
-        
+
         putc('\n', ofile);      /* 模式串以行为单位 */
     }
 
     Fclose(ofile);
-	  
+
     printf("File %s successfully generated\n", pat_filename);
 
     free(buff); free(forbide);
@@ -256,7 +257,7 @@ patset_t *cre_pat_set(const char *pats_file_name)
 {
     FILE *fp_pats; /*模式串文件*/
     patset_t *pat_set;
-     
+
     fp_pats = Fopen(pats_file_name, "rb");
 
     pat_set = MALLOC(1, patset_t);
@@ -317,7 +318,7 @@ static void ins_pat(patnode_t *pat_node, patset_t *pat_set)
 
     if (pat_set->total_pats == 0) { /*模式集为空*/
         pat_set->pat_list = pat_node;/*插入到头*/
-        tail = pat_node; 
+        tail = pat_node;
     } else { /*插入模式串集合尾部*/
         tail->next = pat_node;
         tail = pat_node;
@@ -334,7 +335,7 @@ void des_pat_set(patset_t *pat_set) /*销毁模式集合*/
     patnode_t *p, *next;
 
     /*依次销毁串链表的每个节点*/
-    for (p = pat_set->pat_list; p; p = next) { 
+    for (p = pat_set->pat_list; p; p = next) {
         next = p->next;
         free(p->pat_str); /*销毁模式字符串*/
         free(p); /*销毁模式节点*/
@@ -358,21 +359,21 @@ static double cal_sd(patset_t *pat_set) /*计算标准差*/
 /*print the pat set info*/
 #ifdef DEBUG
 
-void print_pat_set(const patset_t *pat_set, int max) 
+void print_pat_set(const patset_t *pat_set, int max)
 {
     patnode_t *p;
     int num;
     int i;
 
     printf("pats file: %s\n total pats: %ld\n max len: %d min len: %d mean len: %.2f sd: %.2f total len: %ld \n",
-            pat_set->pats_file, 
+            pat_set->pats_file,
             pat_set->total_pats,
             pat_set->max_pat_len, pat_set->min_pat_len, pat_set->mean_pat_len, pat_set->pat_len_sd, pat_set->total_pat_len
             );
 
     for (i = pat_set->min_pat_len; i <= pat_set->max_pat_len; i++)
         printf("len: %2d  num: %5d  proportion: %%%7f\n", i, pat_set->pat_len_distri[i], ((double) pat_set->pat_len_distri[i] / pat_set->total_pats) * 100);
-    
+
     for (num = 1, p = pat_set->pat_list; p && num <= max; p = p->next, num++)
         printf("%4d: %s\n", num, p->pat_str);
 }

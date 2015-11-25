@@ -13,7 +13,6 @@
 #include "map.h"
 #include "sorter.h"
 
-int cpu_size = 0;
 Queue_t *queue;
 extern unsigned ch_num[];
 extern unsigned array_len[];
@@ -46,14 +45,11 @@ static Expand_Node_t *(*match_fun[]) (void *, Char_t const **, Bool_t *) =
 static Suffix_Node_t *make_suffix_node(Char_t const *pat)
 {
      Suffix_Node_t *new_suf_node;
-
+     
      new_suf_node = VMALLOC(Suffix_Node_t, char, strlen(pat) + 1);
-
-     cpu_size += sizeof(Suffix_Node_t) + sizeof(char) * strlen(pat);
-
      new_suf_node->next = NULL;
      strcpy(new_suf_node->str, pat);
-
+     
      return new_suf_node;
 }
 
@@ -63,7 +59,7 @@ static Suffix_Node_t *read_pats(FILE *pats_fp)
      Pat_Len_t pat_len;
      char *line_break = NULL; /*换行符指针*/
      Suffix_Node_t *list_head = NULL, *new_suf_node = NULL; /* 链表头指针 */
-
+     
      while (fgets(buf, sizeof(buf), pats_fp)) {
 	  if (line_break = strchr(buf, '\n'))
 	       *line_break = '\0';
@@ -73,7 +69,7 @@ static Suffix_Node_t *read_pats(FILE *pats_fp)
 	       list_head = new_suf_node;
 	  }
      }
-
+  
      return list_head;
 }
 
@@ -81,17 +77,12 @@ static Expand_Node_t *make_root(FILE *pats_fp)
 {
      Suffix_Node_t *pat_list;
      Expand_Node_t *root = CALLOC(1, Expand_Node_t);
-
-    cpu_size += sizeof(Expand_Node_t);
-
+     
      pat_list = list_radix_sort(read_pats(pats_fp)); /* 先排序 */
      remove_duplicate(pat_list); /* 再去重 */
-
+    
      root->next_level = pat_list;
-  /*   while(pat_list){
-         printf("%s\n",pat_list->str);
-         pat_list = pat_list->next;
-     }*/
+     
      return root;
 }
 
@@ -99,9 +90,9 @@ static void choose_adaptor(Expand_Node_t *expand_node)
 {
   Pat_Num_t total_suf_num, dif_prf_num;
   Pat_Len_t lsp; /* 最短模式串长 */
-
+     
   get_num_and_lsp(expand_node, &total_suf_num, &dif_prf_num, &lsp);
-
+  
   if (lsp == 1) {
     if (dif_prf_num == 1)
       build_single_ch(expand_node); /* 单个字符 */
@@ -122,7 +113,7 @@ static Bool_t match_round(Expand_Node_t *expand_node, Char_t *text, char *pat_bu
   Bool_t is_matched = FALSE, is_pat_end = FALSE;
   Char_t *s = text;
   Pat_Len_t pat_len;
-
+  
   while (expand_node && expand_node->type != END) {
     expand_node = match_fun[expand_node->type](expand_node->next_level, &s, &is_pat_end);
 
@@ -135,11 +126,11 @@ static Bool_t match_round(Expand_Node_t *expand_node, Char_t *text, char *pat_bu
       pat_buf += pat_len;
       is_pat_end = FALSE;
     }
-#endif
+#endif 
   }
-
+  
   *pat_buf = '\0';
-
+  
   return is_matched;
 }
 
@@ -163,7 +154,7 @@ static int get_digits(unsigned num)
 
   for (i = 1; num / 10; num /= 10, i++)
     ;
-
+  
   return i;
 }
 
@@ -171,7 +162,7 @@ void print_statistics(Bool_t show_details)
 {
   int i, digits;
   unsigned total_num;
-
+  
   /* 打印各种结构的数量 */
   printf("\nNumber of structures:\n\n");
   for (total_num = 0, i = 1; i < TYPE_NUM; i++)
@@ -179,7 +170,7 @@ void print_statistics(Bool_t show_details)
 
   qsort(type_num + 1,  TYPE_NUM - 1, sizeof(Sta_Elmt_t), fun_cmp);
   digits = get_digits(type_num[TYPE_NUM-1].num); /* 最大数的位数 */
-
+  
   for (i = TYPE_NUM - 1; i > 0; i--)
     printf("%-13s: %*u (%5.2f%%)\n", type_num[i].name, digits, type_num[i].num, ((double) type_num[i].num / total_num) * 100.0);
 
@@ -187,7 +178,7 @@ void print_statistics(Bool_t show_details)
   printf("\nNumber of function calls:\n\n");
   for (total_num = 0, i = 0; i < MATCH_FUN_NUM; i++)
     total_num += fun_calls[i].num;
-
+    
   qsort(fun_calls, MATCH_FUN_NUM, sizeof(Sta_Elmt_t), fun_cmp);
   digits = get_digits(fun_calls[MATCH_FUN_NUM-1].num); /* 最大数的位数 */
 
@@ -200,7 +191,7 @@ void print_statistics(Bool_t show_details)
     for (i = 0; i < 256; i++)
       if (ch_num[i])
 	printf("%d: %u\n", i, ch_num[i]);
-
+  
     printf("\nArray len distribution:\n");
     for (i = 1; i < NUM_TO_BUILD_ARRAY; i++)
       if (array_len[i])
@@ -221,28 +212,27 @@ int main(int argc, char **argv)
   Char_t opt;
   Char_t *text_file_name, *pats_file_name;
   Bool_t is_matched = FALSE;
-
+  
   /* 处理命令行参数 */
   pats_file_name = argv[1];	/* 模式集文件*/
   text_file_name = argv[2];	/* 文本文件 */
-  if (argc > 3)
-    for (argv += 3; *argv && **argv == '-'; argv++)
+  if (argc > 3) 
+    for (argv += 3; *argv && **argv == '-'; argv++) 
       while (opt = *++*argv)
 	switch (opt) {
 	case 'o' : show_match_results = TRUE; break;
 	case 's' : show_sta_details = TRUE; break;
 	default : fprintf(stderr, "非法命令行参数!\n"); exit(EXIT_FAILURE);
 	}
-
+     
 
   /* 预处理,构建自适应匹配结构 */
- // pats_fp = Fopen(pats_file_name, "r");
-  pats_fp = Fopen("e:\\200.txt", "r");
+  pats_fp = Fopen(pats_file_name, "r");
   fprintf(stderr, "\nConstructing adaptive matching structure..."); fflush(stdout);
   start = clock();
   root = make_root(pats_fp);	/* 构建根节点 */
   Fclose(pats_fp);
-
+     
   queue = make_queue();
   in_queue(queue, root);
   start = clock();
@@ -252,14 +242,11 @@ int main(int argc, char **argv)
   fprintf(stderr, "Done!  \n%f\n",
 	  (double) (end - start) / CLOCKS_PER_SEC);
   free_queue(queue);
-  cpu_size = cpu_size / (1024 * 1024);
-  printf("cpu_size:%dMB\n",cpu_size);
 
   /* 读文本 */
   fprintf(stderr, "\nLoading text..."); fflush(stdout);
   start = clock();
-  //text_fp = Fopen(text_file_name, "rb");
-  text_fp = Fopen("e:\\english.txt", "rb");
+  text_fp = Fopen(text_file_name, "rb");
   file_size = get_file_size(text_fp);
   text_buf = MALLOC(file_size + 1, Char_t);
   fread(text_buf, file_size, 1, text_fp);
@@ -267,19 +254,19 @@ int main(int argc, char **argv)
   end = clock();
   fprintf(stderr, "Done!  \n%f\n",
 	  (double) (end - start) / CLOCKS_PER_SEC);
-
+  
   /* 匹配文本*/
   fprintf(stderr, "\nMatching..."); fflush(stdout);
   start = clock();
   text_end = text_buf + file_size - 1;
   putchar('\n');
-
+     
   for (text_p = text_buf; text_p < text_end; text_p++) {
     is_matched = match_round(root, text_p, pat_buf);
 #if DEBUG
-    if (is_matched && show_match_results)
+    if (is_matched && show_match_results) 
       printf("%ld: %s\n", text_p - text_buf + 1, pat_buf);
-#endif
+#endif     
   }
   end = clock();
   fprintf(stderr, "Done!  \n%f\n",

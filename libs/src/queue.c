@@ -2,39 +2,39 @@
 #include <stdlib.h>
 #include "common.h"
 #include "queue.h"
-
+extern int cpu_size;
 /*void test_queue(Queue_t *q)
   {
   char op;
   int value;
 
   for (;;) {
-  printf("è¯·è¾“å…¥æŒ‡ä»¤: ");
+  printf("ÇëÊäÈëÖ¸Áî: ");
   scanf(" %c", &op);
   while (getchar() != '\n')
   ;
 
   switch(op) {
-  case 'i':  
-  printf("è¯·è¾“å…¥å€¼: ");
+  case 'i':
+  printf("ÇëÊäÈëÖµ: ");
   scanf("%d", &value);
   in_queue(q, value);
   break;
   case 'd': out_queue(q);break;
-  case 'f': 
+  case 'f':
   if ((value = get_q_first(q)) != EMPTY)
-  printf("ç¬¬ä¸€ä¸ªå…ƒç´ ä¸º: %d", value);
+  printf("µÚÒ»¸öÔªËØÎª: %d", value);
   else
-  puts("é˜Ÿåˆ—ç©º!");
+  puts("¶ÓÁÐ¿Õ!");
   break;
   case 'l': if ((value = get_q_last(q)) != EMPTY)
-  printf("æœ€åŽä¸€ä¸ªå…ƒç´ ä¸º: %d", value);
+  printf("×îºóÒ»¸öÔªËØÎª: %d", value);
   else
-  puts("é˜Ÿåˆ—ç©º!");
+  puts("¶ÓÁÐ¿Õ!");
   break;
   case 'p': print_queue(q);break;
   case 'q': return;break;
-  default: puts("ä¸åˆæ³•æŒ‡ä»¤!");
+  default: puts("²»ºÏ·¨Ö¸Áî!");
   }
   printf("\n");
   }
@@ -44,16 +44,19 @@
 
 Queue_t *make_queue(void)
 {
+    cpu_size += sizeof(Queue_t);
+
      return CALLOC(1, Queue_t);
 }
 
 void free_queue(Queue_t *q)
 {
      clean_queue(q);
+     cpu_size -= sizeof(Queue_t);
      free(q);
 }
 
-void clean_queue(Queue_t *q) /*æ¸…ç©ºé˜Ÿåˆ—é“¾è¡¨ï¼Œä½†ä¿ç•™é˜Ÿåˆ—ç»“æž„*/
+void clean_queue(Queue_t *q) /*Çå¿Õ¶ÓÁÐÁ´±í£¬µ«±£Áô¶ÓÁÐ½á¹¹*/
 {
      Q_Node_t *free_node;
 
@@ -61,8 +64,9 @@ void clean_queue(Queue_t *q) /*æ¸…ç©ºé˜Ÿåˆ—é“¾è¡¨ï¼Œä½†ä¿ç•™é˜Ÿåˆ—ç»“æž„*/
           free_node = q->head;
           q->head = q->head->next;
           free(free_node);
+          cpu_size -= sizeof(Q_Node_t);
      }
-	
+
      q->tail = NULL;
      q->count = 0;
 }
@@ -72,17 +76,18 @@ int queue_is_empty(Queue_t *q)
      return q->count == 0;
 }
 
-void in_queue(Queue_t *q, Q_Value_t value) /*æ’å…¥ä¸€ä¸ªå…ƒç´ */
+void in_queue(Queue_t *q, Q_Value_t value) /*²åÈëÒ»¸öÔªËØ*/
 {
      Q_Node_t *new_node =  MALLOC(1, Q_Node_t);
+     cpu_size += sizeof(Q_Node_t);
 
      new_node->value = value;
      new_node->next = NULL;
 
-     if (queue_is_empty(q)) {/*æ’å…¥ç¬¬ä¸€ä¸ªèŠ‚ç‚¹*/
+     if (queue_is_empty(q)) {/*²åÈëµÚÒ»¸ö½Úµã*/
           q->head = new_node;
           q->tail = new_node;
-     } else {	
+     } else {
           q->tail->next = new_node;
           q->tail = new_node;
      }
@@ -90,7 +95,7 @@ void in_queue(Queue_t *q, Q_Value_t value) /*æ’å…¥ä¸€ä¸ªå…ƒç´ */
      q->count++;
 }
 
-Q_Value_t out_queue(Queue_t *q) /*åˆ é™¤ä¸€ä¸ªå…ƒç´ */
+Q_Value_t out_queue(Queue_t *q) /*É¾³ýÒ»¸öÔªËØ*/
 {
      Q_Node_t* free_node;
      Q_Value_t value;
@@ -104,15 +109,17 @@ Q_Value_t out_queue(Queue_t *q) /*åˆ é™¤ä¸€ä¸ªå…ƒç´ */
      free_node = q->head;
      q->head = q->head->next;
      free(free_node);
+     cpu_size -= sizeof(Q_Node_t);
+
      q->count--;
 
-     if (queue_is_empty(q)) /*åˆ é™¤äº†æœ€åŽä¸€ä¸ªèŠ‚ç‚¹*/
+     if (queue_is_empty(q)) /*É¾³ýÁË×îºóÒ»¸ö½Úµã*/
           q->tail = NULL;
 
      return value;
 }
 
-Q_Value_t get_q_first(Queue_t *q) /*è¿”å›žé˜Ÿåˆ—ç¬¬ä¸€ä¸ªå…ƒç´ å€¼ï¼Œå¹¶ä¸åˆ é™¤*/
+Q_Value_t get_q_first(Queue_t *q) /*·µ»Ø¶ÓÁÐµÚÒ»¸öÔªËØÖµ£¬²¢²»É¾³ý*/
 {
      if (queue_is_empty(q))
           return EMPTY;
@@ -120,11 +127,11 @@ Q_Value_t get_q_first(Queue_t *q) /*è¿”å›žé˜Ÿåˆ—ç¬¬ä¸€ä¸ªå…ƒç´ å€¼ï¼Œå¹¶ä¸åˆ é™
           return q->head->value;
 }
 
-Q_Value_t get_q_last(Queue_t *q)/*è¿”å›žé˜Ÿåˆ—æœ€åŽä¸€ä¸ªå…ƒç´ å€¼ï¼Œå¹¶ä¸åˆ é™¤*/
+Q_Value_t get_q_last(Queue_t *q)/*·µ»Ø¶ÓÁÐ×îºóÒ»¸öÔªËØÖµ£¬²¢²»É¾³ý*/
 {
      if (queue_is_empty(q))
           return EMPTY;
-     else	
+     else
           return q->tail->value;
 }
 
@@ -135,15 +142,15 @@ void print_queue(Queue_t *q)
      FILE *fp_result;
 
      fp_result = fopen("./queue_content", "w");
-     
+
      if (queue_is_empty(q)) {
-          printf("ç©ºé˜Ÿåˆ—!\n");
-          fputs("ç©ºé˜Ÿåˆ—!\n", fp_result);
+          printf("¿Õ¶ÓÁÐ!\n");
+          fputs("¿Õ¶ÓÁÐ!\n", fp_result);
           return;
      }
 
-     printf("é˜Ÿåˆ—ä¸­å…±æœ‰ %ld å…ƒç´ :\n ", q->count);
-     fprintf(fp_result, "é˜Ÿåˆ—ä¸­å…±æœ‰ %ld å…ƒç´ :\n ", q->count);
+     printf("¶ÓÁÐÖÐ¹²ÓÐ %ld ÔªËØ:\n ", q->count);
+     fprintf(fp_result, "¶ÓÁÐÖÐ¹²ÓÐ %ld ÔªËØ:\n ", q->count);
      for (index = q->head; index; index = index->next) {
           printf("%ld ", index->value);
           fprintf(fp_result, "%ld ", index->value);

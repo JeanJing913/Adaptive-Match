@@ -55,16 +55,16 @@ typedef struct sta_elmt {	/* 统计元素 */
   char name[100];
   unsigned num;
 } Sta_Elmt_t;
-/*
+
 typedef struct str_elmt {
-  Flag_t pat_end_flag;
+  Flag_t pat_end_flag; 
   union {
     Char_t buf[POINTER_SIZE];
     Char_t *p;
   } str;
   Expand_Node_t expand_node;
 } Str_Elmt_t;
-*/
+
 void get_num_and_lsp(Expand_Node_t const *expand_node, Pat_Num_t  *total_suf_p, Pat_Num_t *dif_prf_p, Pat_Len_t *lsp_p);
 Suffix_Node_t *cut_head(Suffix_Node_t *suf_node, Pat_Len_t lsp);
 void insert_to_expand(Expand_Node_t *expand_node, Suffix_Node_t *suf_node);

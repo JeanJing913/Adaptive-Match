@@ -12,13 +12,13 @@
 
 
 #define SIZE 100000000
-
+/*
 int main(int argc, char **argv)
 {
     clock_t start, end;
     int *a = malloc(SIZE *sizeof ( int)),*p;
     int i;
-    
+
     start = clock();
     for (i = 0; i < SIZE; i++)
         a[i] = 0;
@@ -31,10 +31,10 @@ int main(int argc, char **argv)
         *p = 0;
     end = clock();
 
-    printf("%f\n", (double)(end - start)/CLOCKS_PER_SEC);    
-    
-    
+    printf("%f\n", (double)(end - start)/CLOCKS_PER_SEC);
+
+
 
 
 }
-
+*/
