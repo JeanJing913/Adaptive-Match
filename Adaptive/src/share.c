@@ -4,52 +4,8 @@
 #include <string.h>
 #include "share.h"
 #include "common.h"
-extern int cpu_size;
-inline void get_num_and_lsp(Expand_Node_t const *expand_node, Pat_Num_t *total_suf_p, Pat_Num_t *dif_prf_p, Pat_Len_t *lsp_p)
-{
-  Suffix_Node_t *cur_suf;
-  Pat_Len_t suf_len, lsp = 255;
-  Pat_Num_t num = 0;
-  Suffix_Node_t *left, *right;
 
-  /* 确定total_suf_num和lsp */
-  for (cur_suf = expand_node->next_level; cur_suf; cur_suf = cur_suf->next) {
-    num++;
-    if ((suf_len = strlen(cur_suf->str)) < lsp)
-      lsp = suf_len;
-    // assert(suf_len != 0);
-  }
-
-  *lsp_p = lsp; *total_suf_p = num;
-
-  /* 确定dif_prf_num */
-  num = 1;
-  left = expand_node->next_level; right = left->next;
-  while (right)
-    if (same_str(left->str, right->str, lsp))
-      right = right->next;
-    else {
-      left = right; right = left->next; num++;
-    }
-
-  *dif_prf_p = num;
-}
-
-/* 有序链表去重,头节点一定保留 */
-void remove_duplicate(Suffix_Node_t *suf_list)
-{
-  Suffix_Node_t *left = suf_list, *right = left->next;
-
-  while (right)
-    if (strcmp(left->str, right->str) == 0) {
-      right = right->next; free(left->next); left->next = right;
-
-      cpu_size = cpu_size - (sizeof(Suffix_Node_t) + sizeof(char) * strlen(right->str));
-
-    } else {
-      left = right; right = left->next;
-    }
-}
+extern double memory;
 
 Suffix_Node_t *cut_head(Suffix_Node_t *suf_node, Pat_Len_t lsp)
 {
@@ -57,8 +13,7 @@ Suffix_Node_t *cut_head(Suffix_Node_t *suf_node, Pat_Len_t lsp)
 
   if ((suf_len = strlen(suf_node->str)) == lsp) { /* 该后缀无法再继续分割 */
     free(suf_node);
-
-    cpu_size -= (sizeof(Suffix_Node_t) + sizeof(char) * suf_len);
+    memory -= (sizeof(Suffix_Node_t) + sizeof(char) * suf_len);
 
     return NULL;
   }

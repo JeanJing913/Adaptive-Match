@@ -37,7 +37,7 @@ int stack_is_full(Stack_t *stack)
 
 int stack_is_empty(Stack_t *stack)
 {
-    return stack->top_of_stack = -1;
+    return stack->top_of_stack == -1;
 }
 
 void push(STACK_ELEMENT_T element, Stack_t *stack)

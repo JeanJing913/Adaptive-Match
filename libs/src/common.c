@@ -6,6 +6,8 @@
 #include <string.h>
 #include <sys/stat.h>
 #include "common.h"
+#include "share.h"
+
 
 char *str_cat(const char *str1, const char *str2)
 {

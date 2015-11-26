@@ -1,3 +1,4 @@
+CC=gcc
 LFLAGS = -shared
 CFLAGS = -O3 -Wall -c -fPIC -I$(INCLUDE)
 
@@ -15,46 +16,46 @@ INCLUDE = ./include
 ADTS = stack.o queue.o BST.o lists.o sorter.o
 
 a.out: main.o $(SOS) 
-	gcc $< -L$(SOPATH) -ltextools -lmakedata -lADT  -lbinary -lcommon -lm
+	$(CC) $< -L$(SOPATH) -ltextools -lmakedata -lADT  -lbinary -lcommon -lm
 	rm *.o
 
 $(OBJS) : common.h
 
 main.o: main.c textools.h makedata.h stack.h  BST.h lists.h binary.h
-	gcc $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< -o $@
 
 libcommon.so: common.o
-	gcc $(LFLAGS) $^ -o $(SOPATH)/$@
+	$(CC) $(LFLAGS) $^ -o $(SOPATH)/$@
 common.o: common.c 
-	gcc $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< -o $@
 
 libtextools.so: textools.o
-	gcc $(LFLAGS) $^ -o $(SOPATH)/$@
+	$(CC) $(LFLAGS) $^ -o $(SOPATH)/$@
 textools.o: textools.c textools.h
-	gcc $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< -o $@
 
 libmakedata.so: makedata.o
-	gcc $(LFLAGS) $^ -o $(SOPATH)/$@
+	$(CC) $(LFLAGS) $^ -o $(SOPATH)/$@
 makedata.o : makedata.c makedata.h textools.h
-	gcc $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< -o $@
 
 libbinary.so: binary.o
-	gcc $(LFLAGS) $^ -o $(SOPATH)/$@
+	$(CC) $(LFLAGS) $^ -o $(SOPATH)/$@
 binary.o: binary.c binary.h
-	gcc $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< -o $@
 
 libADT.so: $(ADTS)
-	gcc $(LFLAGS) $^ -o $(SOPATH)/$@
+	$(CC) $(LFLAGS) $^ -o $(SOPATH)/$@
 stack.o: stack.c stack.h
-	gcc $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< -o $@
 queue.o: queue.c queue.h common.h share.h
-	gcc $(CFLAGS) -I../Adaptive/include $< -o $@
+	$(CC) $(CFLAGS) -I../Adaptive/include $< -o $@
 BST.o: BST.c BST.h
-	gcc $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< -o $@
 lists.o: lists.c lists.h
-	gcc $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< -o $@
 sorter.o : sorter.c sorter.h share.h
-	gcc $(CFLAGS) $< -I../Adaptive/include -o $@		
+	$(CC) $(CFLAGS) $< -I../Adaptive/include -o $@		
 
 
 .PHONY: ra ro rso
