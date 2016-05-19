@@ -29,23 +29,13 @@ Filter_T build_filter(Suf_Node_T pat_list)
      Pat_Len_T lss = get_lss(pat_list);
      int8_t block_size = (lss == 1) ? 1 : 2;
      Filter_T filter = filter_new(block_size, lss);
-     uint32_t n = pow_256[block_size];
 
-     struct Suf_Node ***tails = make_tails(n, filter->children);
-
-     for (Suf_Node_T cur_suf = pat_list, next_suf; cur_suf; cur_suf = next_suf) {
-	  next_suf = cur_suf->next;
-	  cur_suf->next = NULL;
-	  uint32_t v;
+     for (Suf_Node_T cur_suf = pat_list; cur_suf; cur_suf = cur_suf->next) {
 	  for (Pat_Len_T i = 0; i <= lss - block_size; i++) {
-	       v = block_123(cur_suf->str + i, block_size);
+	       uint32_t v = block_123(cur_suf->str + i, block_size);
 	       set_bit(filter->bitmap + v, i);
 	  }
-	  *tails[v] = cur_suf; tails[v] = &cur_suf->next;
      }
-     
-     free(tails);
-     push_children(filter->children, n);
 
      return filter;
 }

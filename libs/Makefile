@@ -6,7 +6,7 @@ LINKA = ar -rc
 LINK = $(LINKSO)
 
 INCLUDE = ./include
-CFLAGS = -O3 -Wall -c -std=c99 -fPIC -I$(INCLUDE)
+CFLAGS = -g -Wall -c -std=c99 -fPIC -I$(INCLUDE)
 
 LIBPATH = /usr/local/lib/
 

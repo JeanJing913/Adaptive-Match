@@ -10,7 +10,7 @@ INCLUDE_2 = ./include
 vpath %.h $(INCLUDE_1) $(INCLUDE_2)
 vpath %.c ./src
 
-CFLAGS = -Wall -c -O3 -std=c99 -I$(INCLUDE_1) -I$(INCLUDE_2)
+CFLAGS = -Wall -c -g -std=c99 -I$(INCLUDE_1) -I$(INCLUDE_2)
 
 a.test.out: main.o $(OBJS) $(LIBS)
 	$(CC) $^ -o $@

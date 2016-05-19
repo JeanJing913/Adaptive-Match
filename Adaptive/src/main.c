@@ -159,8 +159,9 @@ static void build_tree_node(Tree_Node_T t)
 /* } */
 
 /* 预处理*/
+Filter_T filter;
 
-Filter_T build_AMT(Char_T *pats_file_name)
+Tree_Node_T build_AMT(Char_T *pats_file_name)
 {
   FILE *pats_fp = Fopen(pats_file_name, "rb");
   fprintf(stderr, "\nBuilding AMT...\n"); fflush(stdout);
@@ -170,9 +171,12 @@ Filter_T build_AMT(Char_T *pats_file_name)
   Fclose(pats_fp);
   remove_duplicates(pat_list); /* 去掉模式集中重复的元素 */
   stk = Stack_new();
+  
+  filter = build_filter(pat_list); /* 根节点为过滤器 */
+  Tree_Node_T root = CALLOC(1, struct Tree_Node);
+  root->link = pat_list;
 
-  Filter_T root = build_filter(pat_list); /* 根节点为过滤器 */
-
+  Stack_push(stk, root);
   while (!Stack_empty(stk)) /* 构建整个AMT */
      build_tree_node(Stack_pop(stk));
   clock_t end = clock();
@@ -226,7 +230,7 @@ static bool check_entrance(Tree_Node_T t, Char_T const *entrance, Char_T *matche
 }
  
 /* 匹配文本*/
-void matching(Filter_T filter, Char_T *text_buf, size_t text_len, bool output)
+void matching(Tree_Node_T root, Char_T *text_buf, size_t text_len, bool output)
 {
   fprintf(stderr, "\nMatching..."); fflush(stdout);
   Char_T matched_pat_buf[500];
@@ -246,7 +250,7 @@ void matching(Filter_T filter, Char_T *text_buf, size_t text_len, bool output)
 
     if (test_bit(&mb, last_pos)) {
       hit_num++;
-      bool find_pat = check_entrance(filter->children + v, entrance, matched_pat_buf, output);
+      bool find_pat = check_entrance(root, entrance, matched_pat_buf, output);
 #if PROFILING
       if (find_pat && output)
 	printf("%ld: %s\n", entrance - text_buf + 1, matched_pat_buf);
@@ -269,6 +273,7 @@ void matching(Filter_T filter, Char_T *text_buf, size_t text_len, bool output)
 	  (double) (end - start) / CLOCKS_PER_SEC, (double) (text_len - hit_num) / text_len);
 }
 
+
 int main(int argc, char **argv)
 {
   bool output = false, show_sta_info = false;
@@ -285,7 +290,7 @@ int main(int argc, char **argv)
 	}
 
   /* 构建AMt */
-  Filter_T root = build_AMT(argv[1]); /* argv[1]是模式集文件名,root是过滤器 */
+  Tree_Node_T root = build_AMT(argv[1]); /* argv[1]是模式集文件名,root是过滤器 */
 
   /* 读文本 */
   fprintf(stderr, "\nLoading text...\n"); fflush(stdout);
